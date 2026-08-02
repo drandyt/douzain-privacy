@@ -41,8 +41,14 @@ shipping code — not a generic template.
 
 Douzain uses your device's camera to show creatures overlaid on the real world in
 augmented-reality (AR) mode. The feed is decoded by the browser/WebView engine and drawn
-straight to the screen (`getUserMedia`). No code path in the AR module captures a still
-image, records video, or uploads a frame anywhere.
+straight to the screen (`getUserMedia`). **No camera image is ever captured, saved, recorded
+or uploaded anywhere.**
+
+AR mode does let you take an in-game **snapshot**, which is saved on your device only (never
+uploaded). A snapshot can never contain camera imagery: it is available only when the AR
+slider is fully into the virtual "serein" view, and the code that builds the picture has no
+access to the camera at all, so a real-world photo cannot be produced even by mistake. A
+snapshot is held in memory and discarded unless you explicitly choose to save it.
 
 You can decline the camera permission; AR mode will be unavailable, but story mode, the
 hex-board battle game, the collection screen, and multiplayer all work without it.
