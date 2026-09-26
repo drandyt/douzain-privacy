@@ -1,6 +1,6 @@
 # Douzain — Privacy Policy
 
-**Last updated:** 26 July 2026
+**Last updated:** 26 September 2026
 
 Douzain ("the game", "we", "us") is a tactical augmented-reality strategy game published by
 **Studio Douzain**, contactable at **studio.douzain@gmail.com**. This
@@ -141,22 +141,33 @@ shown as "SHARING: ON/OFF."
 **We defensively never collect raw location.** Any payload key shaped like a GPS field is
 stripped before it's even queued locally, regardless of source.
 
-**Where it goes:** if collected, batched events are sent over HTTPS to a Cloudflare Worker
-we operate, which writes them as line-delimited JSON files into a private Cloudflare R2
-storage bucket. The worker exposes **only** a write endpoint — there is no read, list, or
-delete endpoint reachable from the app or the internet at large.
+**Where it goes:** if you opt in, batched events are sent over HTTPS to a small relay we
+operate on a single flat-cost server (Hetzner Cloud, Helsinki, Finland —
+`relay.douzain.com`), which writes them into a database on that one machine. This is the
+same server that also carries online-multiplayer match traffic, but analytics and match
+data live in **separate databases** and are never joined.
 
-**Retention:** collected analytics data has no automatic expiry — we retain it until we
-manually delete it. (Stated plainly rather than promising a retention window we have not
-implemented.)
+**IP addresses:** your device's IP address is used only transiently, held in server memory
+to enforce an abuse rate-limit (a cap on requests per minute), and is never written to the
+analytics database or stored alongside your events.
+
+**Retention:** analytics rows are automatically deleted after **180 days**. A daily sweep
+also enforces hard caps on how much can be collected in total (per-device, per-day, and
+overall), so this system cannot grow without bound or generate a surprise bill.
 
 **Withdrawal:** turning collection off immediately stops future collection and **wipes any
 event queued on your device that had not yet been sent**.
-⚠ It does **not** retroactively delete batches that were already transmitted before you
-withdrew — there is no mechanism in this codebase to identify and erase a specific
-installation's already-sent, anonymous data, since the whole point of the identifier is
-that we don't tie it to you. If you want a specific past submission removed, contact
-**studio.douzain@gmail.com** and we will do our best on a manual basis.
+
+The same About screen also has a **"Delete my analytics data"** button. Tapping it asks our
+server to erase every row tied to your random install identifier — the server also
+remembers your identifier as forgotten so a delayed batch that arrives afterwards is
+rejected rather than silently reviving your data. This is best-effort and can take a short
+time to complete server-side (the confirmation says "a few days").
+⚠ It cannot retroactively identify a submission once it has aged out under the 180-day
+retention above, and there is no way for us to distinguish your anonymous rows from anyone
+else's **without** your install identifier, since the whole point of the identifier is that
+we don't tie it to you. If you've lost the identifier and want a specific past submission
+removed, contact **studio.douzain@gmail.com** and we will do our best on a manual basis.
 
 A remote kill switch exists: if we ever need to shut this off server-side, the app is
 told to stop permanently and wipe its local queue.

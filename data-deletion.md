@@ -20,7 +20,7 @@ address you write from is used only to reply to you and is not linked to your ga
 
 | Data | What happens |
 |---|---|
-| Optional gameplay analytics (sessions, match results, progress — only ever collected if you opted in) | **Deleted on request** (best-effort: this data is anonymous, so we locate it by the install identifier you can view in the app's About screen). You can also stop collection instantly yourself: About → sharing toggle OFF, which also wipes anything not yet sent. |
+| Optional gameplay analytics (sessions, match results, progress — only ever collected if you opted in, auto-deleted after 180 days regardless) | **Self-serve in the app**: About → "Delete my analytics data" asks our server to erase everything tied to your device's random install identifier (best-effort, can take a few days; this data is anonymous so we can only locate it by that identifier, not by anything that identifies you). You can also stop collection instantly yourself: About → sharing toggle OFF, which also wipes anything not yet sent. |
 | Creature capture registry entries ("Great Ledger" serial numbers) | **Deleted on request**, located via your multiplayer/capture player ID. |
 | Online multiplayer match data | **Deletes itself automatically** — live matches ~2 hours after inactivity, play-by-mail matches after 30 days of inactivity. No request needed. |
 | Crash reports (Sentry) | Contain no personal information (no names, no location, no identifiers tied to you). Retained per our crash-reporting provider's standard retention and used only to fix bugs. |
