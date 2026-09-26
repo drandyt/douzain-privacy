@@ -11,6 +11,8 @@ associated with their installation deleted.
    what this means for your data.
 3. We will confirm by reply and complete the deletion within **30 days**.
 
+You can also start a request from the web page **[relay.douzain.com/account/delete](https://relay.douzain.com/account/delete)**, which opens the same email for you. If the app shows you a **Player ID** (in the format `DZ-XXXX`), include it — it lets us find your data reliably. If Douzain accounts are available on your device, you can also delete your account yourself inside the app (Settings → Account → Delete account) or with a one-time deletion code on that web page; a deleted account is deactivated at once and permanently erased after a 30-day restore window.
+
 No account exists, so we never hold your name, email, or contact details — the email
 address you write from is used only to reply to you and is not linked to your game data.
 
@@ -28,4 +30,4 @@ There is no additional retention period after a completed deletion request.
 
 Full details: [Douzain Privacy Policy](https://drandyt.github.io/douzain-privacy/).
 
-_Last updated: 26 July 2026_
+_Last updated: 26 September 2026_
