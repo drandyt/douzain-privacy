@@ -1,271 +1,291 @@
 # Douzain — Privacy Policy
 
-**Last updated:** 26 September 2026
+**Last updated:** 1 November 2026
 
-Douzain ("the game", "we", "us") is a tactical augmented-reality strategy game published by
-**Studio Douzain**, contactable at **studio.douzain@gmail.com**. This
-policy describes what the app actually does with data, based on a line-by-line audit of the
-shipping code — not a generic template.
+Douzain ("the game", "we", "us") is a tactical creature game for Android and iPhone, made and published by
+**Studio Douzain**. Studio Douzain is a single independent developer and is responsible for the
+data described here. Contact: **studio.douzain@gmail.com**.
+
+This policy describes what this version of the app actually does with data. It was written from
+the app's code and from the settings of the server it talks to.
 
 ---
 
 ## Summary
 
-- **No account is required to play.** There is no sign-up, no login, no password.
-  - **We do not show ads and do not use any advertising or analytics SDK.** The only
-  third-party network dependency in the app is Sentry (crash reporting — see §4).
-  - **We never sell data to anyone**, and there are no in-app purchases or real-money
-  transactions of any kind in this app.
-- **The camera** is used live, on-device, to render the augmented-reality view. No camera
-  frame is ever saved to a file, encoded to an image, or sent anywhere.
-  - **Location** is read once per AR session, coarsely, to bias *which creature species*
-  appears near you. It is used entirely on your device and — as of this audit — never
-  leaves it. See §2 for the full detail and the one caveat we flag.
-- **If you opt in** (off by default), we collect anonymous play-session and progress data
-  to improve the game. You can withdraw at any time in About; withdrawal stops collection
-  immediately. See §5.
-- **If you play online multiplayer**, your device sends match moves, and the player name
-  you choose to type, to our relay server so your opponent's device can follow the match.
-  See §6 — this section flags a real finding: the display name you type is **not**
-  anonymised, so please don't type your real name if you'd rather not share it.
-- **Creature captures are registered to a permanent server-side ledger** ("The Great
-  Ledger") that gives each captured coin a unique serial number. This is new (landed
-  2026-07-18) and is **not currently deletable on request** — see §7, flagged for owner
-  attention.
-- **Crash reports** go to Sentry, a third-party error-monitoring service, with personal-data
-  collection explicitly disabled in our configuration. See §4.
+- **No accounts.** There is no sign-up, no login, no password and no email address in the game.
+  The game makes a random player ID on your phone.
+- **Your player name is made by the game.** It is picked from a fixed list of names; you can ask
+  for a different one until you lock one in. You cannot type your own name, so we never hold a
+  name you typed.
+- **No ads, no advertising or tracking SDKs, no social-login SDK, no in-app purchases.** We never
+  sell data.
+- **The camera** shows creatures through the Lens, live on your phone. No camera image is ever
+  stored or sent.
+- **Location** is read approximately, on your phone, to choose which creatures appear and to draw
+  the sky in the Observatory. It never leaves your phone.
+- **Online play** sends your player ID, player name, moves and game standing to our own server
+  (Hetzner, Finland). Your player name and standing (rating, ladder points, crowns) are **shown
+  publicly to other players** on the challenge board and the ranked ladder.
+- **Every creature you capture is registered** on our server so it gets a serial number. Test
+  builds use a test ledger that will be deleted before public launch (section 5).
+- **Gameplay statistics and crash reports are optional.** Nothing is sent unless you tap Allow on
+  the gameplay-data card, and you can change your mind at any time.
+- **You can ask us to delete your data** by email; see section 10.
 
 ---
 
 ## 1. Camera
 
-Douzain uses your device's camera to show creatures overlaid on the real world in
-augmented-reality (AR) mode. The feed is decoded by the browser/WebView engine and drawn
-straight to the screen (`getUserMedia`). **No camera image is ever captured, saved, recorded
-or uploaded anywhere.**
+The Lens uses your phone's camera to show creatures beyond the veil. The camera feed is drawn
+straight to the screen. **No camera image is ever saved, recorded or uploaded.**
 
-AR mode does let you take an in-game **snapshot**, which is saved on your device only (never
-uploaded). A snapshot can never contain camera imagery: it is available only when the AR
-slider is fully into the virtual "serein" view, and the code that builds the picture has no
-access to the camera at all, so a real-world photo cannot be produced even by mistake. A
-snapshot is held in memory and discarded unless you explicitly choose to save it.
+You can take an in-game snapshot in the Lens. It is saved on your phone only, and it can only be
+taken when the view is fully in Serein: it is built from the game's own 3D picture, never from
+the camera, so it cannot contain a real-world photo.
 
-You can decline the camera permission; AR mode will be unavailable, but story mode, the
-hex-board battle game, the collection screen, and multiplayer all work without it.
+You can refuse the camera permission. The Lens will not open, but story mode, battles, the
+collection and online play all work without it.
 
 ## 2. Location
 
-**Permission requested:** coarse location only (`ACCESS_COARSE_LOCATION`). Douzain does
-**not** request fine/precise location.
+**Permission:** approximate location only. On Android the app asks for coarse location; on iPhone
+it asks for location while using the app, with Precise Location off by default. It never reads
+location in the background.
 
-**What it's used for:** once you open the AR lens, the app makes a single, non-blocking,
-best-effort request for your approximate coordinates
-(`enableHighAccuracy:false`, so it can only ever return a coarse fix).
-That coordinate is run through a small **offline** lookup table (bounding boxes for named
-regions + a latitude-based climate band — no network call, no third-party geocoding
-service) that turns it into coarse tags like `"scandinavia"` or `"desert"`.
-Those tags are used **only** to nudge which creature species is more likely to appear
-near you (e.g. a colder region favours different creatures than a desert one). They do
-**not** affect which terrain/scenery renders — that is driven by your capture count, not
-location.
+**When it is read:** when you open the Lens, and when you open the Observatory, the
+app asks your phone once for an approximate position.
 
-**Does location ever leave the device?** As of this audit: **no.**
-- The coordinate and the derived tags are held in an in-memory module cache
-  (`js/ar/lens/gps.js`), never written to `localStorage`, and never appear in any
-  telemetry event: `recordEvent()` defensively strips any key that looks like a location
-  field (`lat`, `lng`, `lon`, `coords`, `geo`, etc.) before anything is queued, and the one
-  AR event that fires on a real capture (`'capture'`) carries only species/isNew/
-  collection-count/source fields.
-  - We searched the multiplayer relay client code for any coordinate field and found none —
-  match data is moves/board state only (§6).
-- The new creature-registration system ("Great Ledger," §7) has a hook that *could* attach
-  a region tag to a registration in a future build (`setMintContextProvider` in
-  `js/data/collection.js:206-227`), but as shipped **that hook is never called anywhere in
-  the game** — we grepped the whole codebase for its one call site and found only the
-  function definition. So today a coin registration carries no location signal at all.
-  ⚠ **Flagging this as the one item to re-check before every future release**: if a later
-  change wires that hook up, region-level tags (not raw coordinates) would start reaching
-  our server, and this policy would need an update first.
+**What it is used for:** on your phone, the position is turned into broad tags (a region and a
+climate band) with a lookup table built into the app; no map or geocoding service is called. The
+tags make some creatures more or less likely to appear. The Observatory also uses the position to
+work out the sky.
 
-You can decline the location permission; AR mode still works, it simply has no geographic
-bias on species selection.
+**Does it leave the phone?** No. The position is held in memory only, is never saved, is removed
+from anything that could be sent (gameplay statistics strip any location field), and is not
+included in creature registrations or online matches.
 
-## 3. Online multiplayer relay
+You can refuse the location permission. The Lens still works; creatures are then chosen without a
+regional bias.
 
-If you start or join an online match (live or "postal"/play-by-mail), your device
-exchanges data with our relay server, a Cloudflare Worker we operate
-(`tools/pvp-relay/cloudflare/src/worker.js`). This is covered in detail in §6.
+## 3. Your player ID and player name
 
-## 4. Crash and diagnostic data (Sentry)
+- **Player ID.** On first launch the app makes a random ID on your phone. Settings → ACCOUNT shows
+  a short form of it (it starts with `DZ-`). It is not linked to your phone's hardware, your
+  Google account or anything else about you. It is used for online play, the ranked ladder and
+  the creature registry.
+- **Player name.** The game gives you a name from a fixed list of names. You can ask for a new
+  one until you like it, then lock it in. Names are one word of up to eight letters. Because you
+  cannot type a name, the game does not collect free text from you.
 
-To find and fix crashes, Douzain uses **Sentry** (sentry.io), a third-party error-reporting
-service, if the release build is configured with a Sentry key. Our initialisation
-explicitly disables personal-data collection (`sendDefaultPii: false`) and does not enable
-session replay or performance tracing.
-A crash report can include: the error message and stack trace, the app release identifier,
-and whatever device/OS metadata Sentry's SDK attaches by default (e.g. device model, OS
-version, locale) under its standard (non-PII) error-reporting integrations.
+## 4. Online play
 
-⚠ **UNVERIFIED / caveat:** Sentry's browser SDK ships default "breadcrumb" integrations
-(console messages, navigation, network request URLs) that we did not find explicitly
-disabled in `js/sentry-init.js`. We searched the AR/location code for any `console.log`
-that prints raw coordinates and found none — only distances in metres, ages, and error
-messages — so we have no evidence breadcrumbs could leak a coordinate. But we did not
-exhaustively audit every `console.*` call in the codebase, so this is a caveat, not a
-guarantee.
+Each time the game opens, it asks our relay server whether any of your matches are waiting for
+your move and fetches the ranked ladder; this sends your player ID (and the short handle made
+from it), nothing else. If you start or join an online match, use the challenge board or play
+ranked, your phone also sends the match data below. The relay server is a program we run on a server rented from **Hetzner Online GmbH in Helsinki,
+Finland**. Cloudflare provides only our domain name (DNS) and holds no game data. All traffic is
+encrypted (HTTPS).
 
-Crash reporting **is active in the released build**: the build machine's `secrets.js`
-carries a live Sentry key (independently re-verified 2026-07-26 by inspecting the actual
-file on the release build machine, not inferred from documentation).
+**What is sent:** your player ID, your player name, your moves, army and match clock, and the
+match's invite code (random letters). For ranked play, the app also sends a random key made on
+your phone that signs your results, and your result, rating and ladder points. Online play has no
+chat and no other free-text field.
 
-## 5. Optional anonymous gameplay analytics (opt-in, off by default)
+**Who can see it:**
+- Your opponent sees your player name and your moves.
+- **Everyone** who opens the challenge board sees your posting: your player name, rating, ladder
+  points and crowns.
+- **Everyone** can see the ranked ladder: your player name (or a short handle made from your
+  player ID), rating, points, wins and losses.
 
-The **first time you launch the app**, you are asked: *"May we collect anonymous gameplay
-data to make Douzain better?"* — with an explicit **Allow** / **No thanks** choice. Nothing
-is collected before you answer, and choosing "No thanks" collects nothing at all.
+**How long it is kept:**
+- A live match with no move for 10 minutes ends as abandoned; a play-by-mail match ends after 90
+  days with no move. A finished or abandoned match is deleted 7 days after it ends.
+- An invite nobody joins is deleted after about 2 hours (live) or about 3 days (play-by-mail).
+- The list of your matches that are waiting for your move is deleted 60 days after it last
+  changed.
+- A challenge-board posting stays up until you withdraw it or it expires after 30 days; an
+  expired posting is deleted a day later.
+- Ranked results (wins, losses, rating, points) are kept so that everyone's ladder stays correct.
+  They are kept until you ask us to delete your data; then we remove your name and player ID from
+  them and move them to a new anonymous ladder entry (section 10).
 
-You can change this decision at any time from the **About** screen; the current state is
-shown as "SHARING: ON/OFF."
+**IP addresses:** the server uses your IP address to limit abuse (a cap on requests per minute).
+Most of these limits live only in the server's memory. The limit on creature registrations is
+written to the server's database for a few minutes, under your IP address alone, not linked to
+your player ID; a backup taken in those minutes keeps it for that backup's life (section 10).
 
-**If you opt in**, we collect:
-- **Session activity**: app open/close, session length.
-- **Match results and progress**: e.g. a creature capture (species + whether it was your
-  first + your collection size), a multiplayer match starting.
-- **A compact save-data version snapshot** — a short technical string recording which
-  local save formats are present and their version numbers, used to detect data-migration
-  problems, not to read your actual save contents.
-  - **A random per-install identifier** — not your name, account, or any hardware ID. It is
-  a UUID generated on first launch and stored via the Capacitor Preferences API (survives
-  a WebView cache clear, but is reset if you uninstall and reinstall the app).
-  
-**We defensively never collect raw location.** Any payload key shaped like a GPS field is
-stripped before it's even queued locally, regardless of source.
+## 5. Creature registry ("the Great Ledger")
 
-**Where it goes:** if you opt in, batched events are sent over HTTPS to a small relay we
-operate on a single flat-cost server (Hetzner Cloud, Helsinki, Finland —
-`relay.douzain.com`), which writes them into a database on that one machine. This is the
-same server that also carries online-multiplayer match traffic, but analytics and match
-data live in **separate databases** and are never joined.
+When you capture a creature, in the Lens or in story mode, the app registers it with our server so
+that it gets a serial number. This happens whether or not you allow gameplay statistics, because
+the serial number is part of the game.
 
-**IP addresses:** your device's IP address is used only transiently, held in server memory
-to enforce an abuse rate-limit (a cap on requests per minute), and is never written to the
-analytics database or stored alongside your events.
+**Test builds use a test ledger.** Serial numbers in test builds are not permanent: the whole test
+ledger will be deleted before the game's public launch, and a new ledger starts then.
 
-**Retention:** analytics rows are automatically deleted after **180 days**. A daily sweep
-also enforces hard caps on how much can be collected in total (per-device, per-day, and
-overall), so this system cannot grow without bound or generate a surprise bill.
+**What is sent:** the coin's ID, the species, the capture time, the app version, the creature's
+model version and your player ID. No player name and no location.
 
-**Withdrawal:** turning collection off immediately stops future collection and **wipes any
-event queued on your device that had not yet been sent**.
+**What is kept:** the above, plus the serial number, edition, a tamper-evident signature where
+that is switched on, and the coin's history of owners by player ID. Registry entries can be read
+by anyone who knows a coin's serial or a player ID. They are kept until the test ledger is
+deleted. **If you ask us to delete your data sooner, we remove your player ID from every entry**:
+the serial number, species and capture date remain, but no longer point to you.
 
-The same About screen also has a **"Delete my analytics data"** button. Tapping it asks our
-server to erase every row tied to your random install identifier — the server also
-remembers your identifier as forgotten so a delayed batch that arrives afterwards is
-rejected rather than silently reviving your data. This is best-effort and can take a short
-time to complete server-side (the confirmation says "a few days").
-⚠ It cannot retroactively identify a submission once it has aged out under the 180-day
-retention above, and there is no way for us to distinguish your anonymous rows from anyone
-else's **without** your install identifier, since the whole point of the identifier is that
-we don't tie it to you. If you've lost the identifier and want a specific past submission
-removed, contact **studio.douzain@gmail.com** and we will do our best on a manual basis.
+## 6. Gameplay statistics (optional, off unless you allow it)
 
-A remote kill switch exists: if we ever need to shut this off server-side, the app is
-told to stop permanently and wipe its local queue.
+The first time you play, a card asks: *"May we collect gameplay data to make Douzain better?"*,
+with **Allow gameplay data** and **No thanks**. Nothing is sent before you answer, and nothing is
+sent if you choose No thanks. You can change your choice at any time in Settings → ABOUT.
 
-## 6. Online multiplayer — what actually transits the relay
+**If you allow it, the app sends:**
+- play sessions (app opened and closed, session length, the screen a session ended on);
+- match results and progress (for example a capture, a story stage started or finished, an Arena
+  match started or finished);
+- in-game spending of the game's own currency (what you bought with it; there is no real money in
+  the game);
+- the app version and a short technical note of which save formats are on the phone;
+- a random ID made on your phone for statistics only. It is a different value from your player
+  ID and is not linked to it, to your name or to your location.
 
-Our multiplayer relay is a Cloudflare Worker with Durable Objects
-(`tools/pvp-relay/cloudflare/src/worker.js`). It has no user accounts and no login.
+**Where it goes:** to our own server (the same Hetzner server, a separate database). Your IP
+address is used only in memory, to limit abuse; it is not stored with the statistics.
 
-When you create or join an online match, the following data is sent to the relay and held
-for the lifetime of that match:
-- A random per-install player ID (the same kind of anonymous identifier as §5, generated
-  and stored locally — a different value from the telemetry ID, not linked to it).
-  - **The display name you have chosen** (default "Player," editable, up to 32 characters).
-  This is sent to the relay and shown to your opponent's device.
-    ⚠ **This is a genuine finding worth your attention:** unlike everything else in this
-  policy, the display name is free text you type. If you type your real name, that real
-  name is transmitted to your opponent and stored (for the match's lifetime) on our
-  server. **We recommend not using your real name as your display name if you'd rather it
-  stay private.**
-- Your in-game moves, army setup, and match/clock state — no other free-text field exists
-  in the match protocol besides the display name above.
-- An invite code (random letters) that acts as the match's address — not personally
-  identifying.
+**How long:** deleted automatically after **180 days**.
 
-**Retention:** a live match is deleted from the server after 2 hours of inactivity; a
-postal (play-by-mail) match is kept for up to 30 days of inactivity; a match you close is
-deleted about 60 seconds after closing.
-A separate small database table tracks "whose turn is it" per match so the app can show
-you a "your move" list; these turn-tracking rows (which contain only the anonymous player
-ID and match code, no personal data) may be retained after the match itself expires.
+**Stopping and deleting:** turning sharing off in Settings → ABOUT stops it at once and deletes
+anything not yet sent. **Delete my analytics data** (Settings → ABOUT) asks our server to erase
+everything tied to your statistics ID; this can take a few days. Afterwards the server keeps only
+that ID itself on a do-not-accept list, so late-arriving statistics are refused, until the 180-day
+limit passes.
 
-## 7. Creature capture registry ("The Great Ledger") — new, landed 2026-07-18
+## 7. Crash reports (optional, same choice)
 
-When you capture a creature (in AR or in story mode), the app now registers that capture
-with a server-side ledger so every captured creature gets a permanent, unique serial
-number and edition stamp — similar in spirit to a coin mint's serial registry.
+Crash reports start only if you tap **Allow gameplay data** on the card in section 6; if you
+choose No thanks, no crash reports are sent. They go to **Sentry** (Functional Software, Inc.), a
+crash-reporting service, and are stored in Sentry's **European Union** region for **30 days**.
 
-**What's sent:** the coin's ID, the species, the capture timestamp, and a "provenance"
-object containing: the capture timestamp again, a model-version tag for that species, the
-git build identifier of the app version you're running, and the same random per-install
-player ID used for multiplayer (§6) — **not** your telemetry ID, and (per §2) currently
-**no** location data.
+While gameplay data is allowed, Sentry also receives a small "session" note each time the game
+opens, so we can see what share of play sessions crash: the app version, phone model and whether
+the session ended in a crash. It holds no player ID, name or location.
 
-**What the server stores, permanently:** the above, plus a server-assigned serial number,
-a global sequence number, an "edition" label, and — if a signing key is configured — a
-tamper-evident signature over the entry.
+A crash report holds the error and where it happened in the code, the app version, the phone
+model, operating-system version and language, and a short trail of recent app events. Sentry is set not to
+store IP addresses, and before a report is sent the app removes player IDs, coin IDs and other
+identifiers from its text. Crash reports never contain your player name or your location.
 
-**This registry is permanent by design** — the same way a mint doesn't erase a coin's
-serial number. Once a creature is captured, its registration (including your anonymous,
-random player ID — never your name or contact details) is retained indefinitely on our
-server, and there is no automatic way for a player to remove it from inside the app. If
-this concerns you, contact **studio.douzain@gmail.com** and we will handle removal
-requests manually on a best-effort basis.
+## 8. Notifications
 
-## 8. Data we do not collect
+If you allow notifications, the app may remind you, a few hours after you close the Lens, that a
+creature you have not caught yet is nearby or that something new has appeared. These reminders
+are scheduled on your phone; nothing is pushed from a server, and the reminder is not based on
+your location. You can turn reminders off in Settings → NOTIFICATIONS or in your phone's settings.
 
-We do not collect or process: your name (unless you choose to type it as your multiplayer
-display name — see §6), email address, phone number, contacts, photo/media library,
-financial or payment information, advertising identifiers, browsing history outside this
-app, or any account credentials (there are no accounts to have credentials for).
+## 9. Data on your phone, and phone backups
 
-## 9. Children
+Your collection, progress, settings, player ID, player name and statistics ID are stored on your
+phone. Uninstalling the app deletes them from the phone.
 
-Douzain is intended for players aged 13 and up (matching the app's Google Play target
-audience setting). We do not knowingly collect personal information from children under 13.
+Android's own backup is turned on for this app. If backup is on in your phone's settings, Android
+may copy the app's saved data (including your player ID, statistics ID and collection) to your
+Google account's backup, under Google's terms. We cannot see or delete that copy; you can delete
+it in your Google account's backup settings.
 
-## 10. Permissions this app requests, and why
+On iPhone, iCloud Backup and computer backups may include the app's saved data in the same way,
+under Apple's terms. We cannot see or delete that copy; you can exclude the app in your iPhone's
+iCloud settings.
 
-| Permission | Why | Leaves the device? |
+## 10. How long we keep data, and how to have it deleted
+
+**How to ask:** email **studio.douzain@gmail.com** from any address, with the subject **"Data
+deletion request"**. Include your Player ID (Settings → ACCOUNT, starts with `DZ-`) if you have
+it, your player name, and roughly when you last played. We reply to confirm and finish within
+**30 days**. You do not need the game to ask. The full steps are also at
+[relay.douzain.com/account/delete](https://relay.douzain.com/account/delete).
+
+**What we delete:** your player name and player ID from our server, your online matches, your
+list of matches waiting for a move, your challenge-board postings and everything else our server
+holds under your player ID. Matches you were in are deleted whole, including your opponent's copy, even a match still in play.
+
+**What we keep after a deletion:**
+- Creature registry entries: the serial number, species and capture date, with your player ID
+  removed (section 5).
+- Ranked results: wins, losses and rating, with your name and player ID removed and moved to a
+  new anonymous ladder entry, so your
+  opponents' records stay correct.
+
+**Retention at a glance:**
+
+| Data | Kept for |
+|---|---|
+| Live match / play-by-mail match | until it ends (10 minutes / 90 days with no move), then 7 days |
+| Unjoined invite | about 2 hours (live) / about 3 days (play-by-mail) |
+| Matches-waiting-for-your-move list | 60 days after it last changed |
+| Challenge-board posting | until withdrawn, at most 30 days, deleted a day after it expires |
+| Ranked results | until you ask; then name and player ID removed |
+| Creature registry entries | until the test ledger is deleted before public launch; on request your player ID is removed sooner |
+| Gameplay statistics (if allowed) | 180 days, or sooner on Delete my analytics data |
+| Crash reports (if allowed) | 30 days, at Sentry (EU region) |
+| Server logs | 14 days |
+| Server backups | nightly copies on the server for 14 days; an encrypted off-site copy (Hetzner, EU) deleted within six months; copies taken before server updates deleted after 90 days |
+
+**Backups:** because of the backups above, data deleted from our server is gone from every copy
+within six months.
+
+**Server logs:** our server's logs can contain an IP address, a player ID or an invite code. They
+are deleted automatically after 14 days.
+
+**Your rights:** you can also ask us for a copy of your data or to correct it, at the same
+address. If you are unhappy with how we handle your data, you can complain to the UK Information
+Commissioner's Office (ico.org.uk) or your local data protection authority.
+
+## 11. Other companies involved
+
+- **Hetzner Online GmbH** (Germany; server in Finland) runs the server our relay and database are
+  on, under a data processing agreement. Off-site backups are stored with Hetzner, encrypted.
+- **Sentry / Functional Software, Inc.** receives crash reports if you allow them (section 7),
+  under a data processing agreement; stored in the EU region.
+- **Google** (Android) delivers the game's extra content through Play Asset Delivery when you
+  install it, and runs Android's backup (section 9). Google does this under its own terms.
+- **Apple** (iPhone) distributes the app through the App Store and TestFlight and runs iCloud
+  Backup (section 9), under Apple's terms. We do not use Game Center sign-in in this version.
+- **Cloudflare** provides our domain name service (DNS) only; game data does not pass through or
+  stay with Cloudflare.
+
+The app contains **no advertising SDK, no analytics SDK (such as Firebase or Google Analytics) and
+no social-login SDK**, including Google Play Games sign-in.
+
+## 12. Data we do not collect
+
+We do not collect your real name, email address (except when you email us), phone number,
+contacts, photos or videos, microphone audio, files, payment details, advertising ID, browsing
+history or precise location, and there are no account passwords.
+
+## 13. Children
+
+Douzain is for players aged 13 and over. We do not knowingly collect personal data from children
+under 13. If you believe a child under 13 has played online, email us with what you know. We will
+look into it, and we may ask for more information. If we find that data we hold belongs to a child
+under 13, we will delete it. We do not delete a player's data on an unsupported report alone.
+
+## 14. Permissions the app asks for
+
+| Permission | Why | Leaves the phone? |
 |---|---|---|
-| Internet | Crash reports (§4), optional telemetry (§5), multiplayer relay (§6), creature-capture registry (§7) | Only the data described in those sections |
-| Camera | Live AR creature overlay (§1) | No |
-| Coarse location | Biases which creature species appears in AR (§2) | No (see §2's one caveat) |
-| Notifications | Local "your move" alerts for postal multiplayer matches (scheduled on your device, not pushed from a server) | No |
-| Vibrate | Haptic feedback (button taps, alerts) | No |
+| Internet | Online play (section 4), creature registry (5), gameplay statistics and crash reports if allowed (6, 7), downloading game content | Only the data in those sections |
+| Camera | The Lens (section 1) | No |
+| Approximate location (Android: coarse; iPhone: while using the app, Precise off) | Which creatures appear; the Observatory sky (section 2) | No |
+| Notifications | Creature reminders (section 8) | No |
+| Motion (iPhone) | Turning the view in the Lens by turning the phone | No |
+| Vibrate | Haptic feedback | No |
 
-## 11. Other third parties
+## 15. Changes to this policy
 
-The only third party this app sends any data to is **Sentry** (§4). The multiplayer relay
-and telemetry endpoints (§5, §6, §7) are Cloudflare Workers **we operate ourselves** — data
-sent there goes to our own infrastructure, not to an independent company, though it does
-transit Cloudflare's network to reach it.
+When the game changes what it does with data, we update this page and the "Last updated" date
+before the new version reaches players.
 
-The app also uses Google Play's own **Asset Delivery** library to download a supplementary
-content pack after install (a Google Play Store distribution feature, not an analytics or
-advertising SDK — it has no code path that reads or sends gameplay/personal data).
+## 16. Contact
 
-We do not use any advertising network, analytics SDK (e.g. Firebase/Google Analytics), or
-social-login SDK. This is based on the complete dependency list in `package.json` and
-`android/app/build.gradle`, not a promise made without checking.
-
-## 12. Changes to this policy
-
-We may update this policy as the game changes. The "Last updated" date at the top will
-change whenever we do, and material changes will be described here.
-
-## 13. Contact
-
-Questions about this policy or a data request: **studio.douzain@gmail.com**.
-
+Questions or requests: **studio.douzain@gmail.com**.
