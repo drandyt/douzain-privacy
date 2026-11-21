@@ -2,8 +2,8 @@
 
 This page is for players of **Douzain**, a game by **Studio Douzain**, who want their data
 deleted. Douzain has no accounts: no sign-up, no login and no email address in the game. What our
-server holds about you is tied to a random player ID made on your phone, and your player name is
-picked by the game from a fixed list, never typed by you.
+server holds about you is tied to a player ID made on your phone, and your player name is picked
+by the game from a fixed list, never typed by you.
 
 ## How to ask us to delete your data
 
@@ -21,31 +21,60 @@ The same steps are on [relay.douzain.com/account/delete](https://relay.douzain.c
 ## Delete your gameplay statistics yourself, in the game
 
 If you allowed gameplay data, open Settings → ABOUT and tap **Delete my analytics data**. This
-stops sharing and asks our server to erase every statistic tied to your phone's statistics ID. It
-can take a few days. Turning sharing off also deletes anything not yet sent.
+asks our server to erase everything tied to your phone's statistics ID; if your phone is offline,
+the request is sent the next time it can reach our server. Afterwards the server keeps only that
+ID and the date of the request, so late-arriving statistics are refused, until the 180-day limit
+passes. Turning sharing off stops new statistics and deletes any not yet sent from your phone;
+anything already on its way may still arrive.
 
-## What we delete
+## What we delete from our server
 
-- Your player name and player ID on our server.
-- Your online matches, your list of matches waiting for your move, and your challenge-board
-  postings. Matches you were in are deleted whole, including your opponent's copy, even a match still in play.
-- Everything else our server holds under your player ID.
+- Your player name and player ID.
+- Your online matches, your list of matches waiting for your move, your quick-match queue entry,
+  your challenge-board postings and any challenge you were holding. Matches you were in are
+  deleted whole, including your opponent's copy on our server, even a match still in play. A
+  challenge you accepted stays on the board's records as accepted, but no longer points to you.
 
-## What we keep, and for how long
+## What we keep after a deletion
 
-| Data | What happens |
+- **Creature registry ("Great Ledger") entries:** the coin's ID, serial number, species, times,
+  edition and signature, with your player ID and any name removed. Test builds use a test ledger,
+  which we will delete in full before the game's public launch.
+- **Ranked results:** wins, losses, rating, points, crowns, and the match codes and times behind
+  them, with your name and player ID removed and your key replaced by a new random one, so your
+  opponents' records stay correct. The ladder row stays, without your name.
+
+## What a deletion request does not cover
+
+- **Gameplay statistics:** they are not linked to your player ID, so use **Delete my analytics
+  data** in the game (above), or they go after 180 days.
+- **Crash reports at Sentry:** they go after 30 days.
+- **The IP address log for creature registrations,** which is not stored with your player ID and
+  is cleared as shown below.
+- **Server logs and backups,** which expire as shown below.
+- **Copies on phones:** your own phone and its backups, and any copy of a match or message on
+  another player's phone.
+- **Our email exchange with you about the request.**
+
+## How long data is kept
+
+| Data | Kept for |
 |---|---|
-| Creature registry ("Great Ledger") entries | Kept, with your player ID removed: the serial number, species and capture date remain but no longer point to you. Test builds use a test ledger, which is deleted in full before public launch. |
-| Ranked results | Your wins, losses and rating stay on the ladder so your opponents' records stay correct, with your name and player ID removed and moved to a new anonymous ladder entry. |
-| Online matches | Also delete themselves: a live match ends after 10 minutes with no move and a play-by-mail match after 90 days with no move, and is deleted 7 days after it ends. An unjoined invite is deleted after about 2 hours (live) or about 3 days (play-by-mail). |
-| Challenge-board postings | Also expire by themselves after 30 days and are deleted a day later. |
-| Gameplay statistics (only if you allowed them) | Deleted automatically after 180 days, or sooner with Delete my analytics data. |
-| Crash reports (only if you allowed gameplay data) | Held by Sentry in its European Union region and deleted after 30 days. They contain no player name, player ID or location. |
-| Server logs | Deleted automatically after 14 days. They can contain an IP address, a player ID or an invite code. |
-| Server backups | Nightly copies on our server are kept for 14 days; an encrypted off-site copy is deleted within six months; copies taken before server updates are deleted after 90 days. So deleted data is gone from every copy within six months. |
-| Your phone's own backup | Not held by us. If Android backup or iCloud Backup is on, a copy of the app's data may be in that backup; you can delete it there. |
-| Camera images and location | Never leave your phone, so we hold none to delete. |
+| Live / play-by-mail match | until it ends (10 minutes / 90 days with no activity, or sooner), then 7 days after either player last opened it (ranked: 7 days after it ended); a match a player closes, about a minute |
+| Unjoined invite | about 2 hours (live) / about 3 days (play-by-mail) |
+| Matches-waiting-for-your-move list | 60 days after it last changed (daily clean-up) |
+| Challenge-board posting (and, for an unsigned posting, a scrambled IP address) | until withdrawn or accepted, at most 30 days; deleted by a daily clean-up a day after it expires |
+| Quick-match queue entry (player ID, match choices, scrambled IP address) | matched for up to 5 minutes; removed from the database the next time the queue is used after that |
+| Ranked results | no fixed end; on request, name and player ID removed and key replaced |
+| Creature registry entries | until we delete the test ledger before public launch; on request your player ID and any name are removed sooner |
+| Creature registration limit (IP address and time) | removed when over 5 minutes old, at the next registration of the same species |
+| Gameplay statistics (only if you allowed them) | 180 days, or sooner with Delete my analytics data |
+| Crash reports (only if you allowed gameplay data) | 30 days, at Sentry (EU region) |
+| Server logs | 14 days. They can contain an IP address, a player ID, a ranked ID or an invite code |
+| Server backups | nightly copies on the server for 14 days; encrypted off-site copies (Hetzner, EU) kept daily for 14 days, weekly for 8 weeks and monthly for 3 months; copies taken before server updates deleted after 90 days. Data deleted from our server is gone from all of our server's backups within about six months |
+| Your phone's own backup | not held by us. If Android backup or iCloud Backup is on, a copy of the app's data may be in that backup; you can delete it there |
+| Camera images and location | never leave your phone, so we hold none to delete |
 
-Full details: [Douzain Privacy Policy](https://drandyt.github.io/douzain-privacy/).
+Full details: [Douzain Privacy Policy](https://drandyt.github.io/douzain-privacy/), section 10.
 
-_Last updated: 1 November 2026_
+_Last updated: 21 November 2026_
